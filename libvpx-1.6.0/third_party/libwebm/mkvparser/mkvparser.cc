@@ -166,7 +166,6 @@ long long ReadID(IMkvReader* pReader, long long pos, long& len) {
   }
 
   len = id_length;
-  //printf("ReadID: 0x%x\n", ebml_id);
   return ebml_id;
 }
 
@@ -7082,6 +7081,9 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
   long long bpos = -1;
   long long bsize = -1;
 
+  long long additional_offset = 0;
+  long long additional_size = 0;
+
   while (pos < stop) {
     long len;
     const long long id = ReadID(pReader, pos, len);
@@ -7095,12 +7097,6 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
     assert((pos + len) <= stop);
 
     pos += len;  // consume size
-
-    // printf("ID: 0x%x\n", id);
-
-    // if (id == libwebm::kMkvBlockAdditional) {
-    //   printf("ADDITIONAL!!!! %d\n", len);
-    // }
 
     if (id == libwebm::kMkvBlock) {
       if (bpos < 0) {  // Block ID
@@ -7131,6 +7127,34 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
         prev = time;
       else
         next = time;
+    } else if (id == libwebm::kMkvBlockAdditions) {
+      long long pp = pos;
+      if (ReadID(pReader, pp, len) == libwebm::kMkvBlockMore) {
+        // Consume len
+        pp += len;
+        ReadUInt(pReader, pp, len);
+        pp += len;
+
+        if (ReadID(pReader, pp, len) == libwebm::kMkvBlockAddID) {
+          pp += len;
+
+          long long size = ReadUInt(pReader, pp, len);
+          pp += len;
+
+          long add_id = UnserializeUInt(pReader, pp, size);
+          pp += size;
+
+          if (add_id == 1) {
+            if (ReadID(pReader, pp, len) == libwebm::kMkvBlockAdditional) {
+              pp += len;
+              long long addlen = ReadUInt(pReader, pp, len);
+              pp += len;
+              additional_offset = pp;
+              additional_size = addlen;
+            }
+          }
+        }
+      }
     }
 
     pos += size;  // consume payload
@@ -7158,6 +7182,9 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
   BlockGroup* const p = static_cast<BlockGroup*>(pEntry);
 
   const long status = p->Parse();
+
+  p->m_additional_size = additional_size;
+  p->m_additional_offset = additional_offset;
 
   if (status == 0) {  // success
     ++m_entries_count;

@@ -352,6 +352,8 @@ proc vpx_codec_error(ctx: ptr vpx_codec_ctx_t): cstring {.importc.}
 
 proc webm_read_frame(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc.}
 
+proc webm_read_frame_alpha(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc.}
+
 proc vpx_codec_decode(ctx: ptr vpx_codec_ctx_t, data: ptr uint8, data_sz: cuint, user_priv: pointer, deadline: clong): vpx_codec_err_t {.importc.}
 
 proc vpx_codec_get_frame(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_image_t {.importc.}
@@ -370,6 +372,7 @@ type WebmReader* = ref object
     vpxctx: VpxInputContext
     iface: ptr VpxInterface
     decoder: vpx_codec_ctx_t
+    alpha_decoder: vpx_codec_ctx_t
     cfg: vpx_codec_dec_cfg_t
     buf: ptr uint8
     bytes_in_buffer: csize
@@ -382,9 +385,13 @@ proc init(r: WebmReader) =
     r.iface = get_vpx_decoder_by_fourcc(VP9_FOURCC)
     assert(not r.iface.isNil)
 
-    let i = vpx_codec_dec_init_ver(addr r.decoder, r.iface.codec_interface(), addr r.cfg, 0)
-    if i != 0:
-        echo vpx_codec_error(addr r.decoder)
+    var res = vpx_codec_dec_init_ver(addr r.decoder, r.iface.codec_interface(), addr r.cfg, 0)
+    if res != 0:
+        echo "Error initializing codec: ", vpx_codec_error(addr r.decoder)
+
+    res = vpx_codec_dec_init_ver(addr r.alpha_decoder, r.iface.codec_interface(), addr r.cfg, 0)
+    if res != 0:
+        echo "Error initializing alpha codec: ", vpx_codec_error(addr r.alpha_decoder)
 
 proc newReader*(path: string): WebmReader =
     result.new()
@@ -403,12 +410,13 @@ proc rewind*(r: WebmReader) =
     r.bytes_in_buffer = 0
     r.init()
 
-proc nextFrame*(r: WebmReader): ptr vpx_image_t =
+proc nextFrame*(r: WebmReader, alpha: var ptr vpx_image_t): ptr vpx_image_t =
     var flush_decoder = false
     if webm_read_frame(addr r.webmctx, addr r.buf, addr r.bytes_in_buffer) == 0:
         let res = vpx_codec_decode(addr r.decoder, r.buf, cuint(r.bytes_in_buffer), nil, 0)
         if res != 0:
             echo "decode error: ", res, ": ", vpx_codec_error_detail(addr r.decoder)
+            return nil
     else:
         flush_decoder = true
 
@@ -416,10 +424,20 @@ proc nextFrame*(r: WebmReader): ptr vpx_image_t =
         if vpx_codec_decode(addr r.decoder, nil, 0, nil, 0) != 0:
             echo "Failed to flush decoder"
 
-    var got_data = false
     var iter: vpx_codec_iter_t
     let img = vpx_codec_get_frame(addr r.decoder, addr iter)
+
+    if not img.isNil and webm_read_frame_alpha(addr r.webmctx, addr r.buf, addr r.bytes_in_buffer) == 0:
+        let res = vpx_codec_decode(addr r.alpha_decoder, r.buf, cuint(r.bytes_in_buffer), nil, 0)
+        if res != 0:
+            echo "alpha decode error: ", res, ": ", vpx_codec_error_detail(addr r.alpha_decoder)
+        var iter: vpx_codec_iter_t
+        alpha = vpx_codec_get_frame(addr r.alpha_decoder, addr iter)
+
     return img
+
+proc width*(r: WebmReader): int = r.vpxctx.width.int
+proc height*(r: WebmReader): int = r.vpxctx.height.int
 
 when isMainModule:
     var webmctx: WebmInputContext

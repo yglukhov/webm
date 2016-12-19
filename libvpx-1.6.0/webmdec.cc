@@ -120,6 +120,35 @@ int file_is_webm(struct WebmInputContext *webm_ctx,
   return 1;
 }
 
+int webm_read_frame_alpha(struct WebmInputContext *webm_ctx,
+                          uint8_t **buffer,
+                          size_t *buffer_size) {
+  const mkvparser::BlockEntry *block_entry =
+      reinterpret_cast<const mkvparser::BlockEntry*>(webm_ctx->block_entry);
+
+  if (block_entry != NULL && block_entry->GetKind() == mkvparser::BlockEntry::kBlockGroup) {
+    const mkvparser::BlockGroup *group = static_cast<const mkvparser::BlockGroup*>(block_entry);
+    long long size = group->m_additional_size;
+    if (size != 0) {
+      if (size > static_cast<long>(*buffer_size)) {
+        delete[] *buffer;
+        *buffer = new uint8_t[size];
+        if (*buffer == NULL) {
+          return -1;
+        }
+        webm_ctx->buffer = *buffer;
+      }
+      *buffer_size = size;
+
+      mkvparser::MkvReader *const reader =
+          reinterpret_cast<mkvparser::MkvReader*>(webm_ctx->reader);
+      return reader->Read(group->m_additional_offset, size, *buffer);
+    }
+  }
+
+  return 1;
+}
+
 int webm_read_frame(struct WebmInputContext *webm_ctx,
                     uint8_t **buffer,
                     size_t *buffer_size) {

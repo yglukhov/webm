@@ -56,6 +56,10 @@ int webm_read_frame(struct WebmInputContext *webm_ctx,
                     uint8_t **buffer,
                     size_t *buffer_size);
 
+int webm_read_frame_alpha(struct WebmInputContext *webm_ctx,
+                    uint8_t **buffer,
+                    size_t *buffer_size);
+
 // Guesses the frame rate of the input file based on the container timestamps.
 int webm_guess_framerate(struct WebmInputContext *webm_ctx,
                          struct VpxInputContext *vpx_ctx);

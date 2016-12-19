@@ -174,6 +174,9 @@ class BlockGroup : public BlockEntry {
   long long GetNextTimeCode() const;  // as above
   long long GetDurationTimeCode() const;
 
+  long long m_additional_offset;
+  long long m_additional_size;
+
  private:
   Block m_block;
   const long long m_prev;
