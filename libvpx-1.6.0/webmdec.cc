@@ -85,10 +85,8 @@ int file_is_webm(struct WebmInputContext *webm_ctx,
 
   const mkvparser::Tracks *const tracks = segment->GetTracks();
   const mkvparser::VideoTrack* video_track = NULL;
-  printf("num tracks: %d\n", tracks->GetTracksCount());
   for (unsigned long i = 0; i < tracks->GetTracksCount(); ++i) {
     const mkvparser::Track* const track = tracks->GetTrackByIndex(i);
-    printf("tracktype: %d\n", track->GetType());
     if (track->GetType() == mkvparser::Track::kVideo) {
       video_track = static_cast<const mkvparser::VideoTrack*>(track);
       webm_ctx->video_track_index = track->GetNumber();
