@@ -8,3 +8,4 @@ license       = "MIT"
 # Dependencies
 
 requires "nim >= 0.15.3"
+requires "https://github.com/yglukhov/clurp"
