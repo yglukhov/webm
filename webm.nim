@@ -864,9 +864,17 @@ when isMainModule:
             else:
                 result = 0.75 + cf
 
+        const encodeAlphaToY = true
+
+        when encodeAlphaToY:
+            proc encode(y, a: float): uint8 =
+                let yy = uint8(y * 63)
+                let aa = uint8(a * 3)
+                result = (aa shl 6) or yy
+
         var curFr = 0
         proc nextFrame(img: ptr vpx_image_t): bool =
-            if curFr > 404: return false
+            if curFr > 30: return false
             echo "fr: ", curFr
 
             var idx = $curFr
@@ -880,31 +888,15 @@ when isMainModule:
                     let sB = int32(cast[uint8](p.data[(y * width + x) * 4 + 2]))
                     let sA = int32(cast[uint8](p.data[(y * width + x) * 4 + 3]))
 
-#                    let sG = int32(encodeAlphaInComponent(sGG / 255, sA / 255) * 255)
-
-                    let yy = cast[uint8]( (66*sR + 129*sG + 25*sB + 128) shr 8) + 16
+                    var yy = cast[uint8]( (66*sR + 129*sG + 25*sB + 128) shr 8) + 16
                     let uu = cast[uint8]( (-38*sR - 74*sG + 112*sB + 128) shr 8) + 128
                     let vv = cast[uint8]( (112*sR - 94*sG - 18*sB + 128) shr 8) + 128
 
-                    #let yyy = uint8(encodeAlphaInComponent((yy - 16).float / 235, sA / 255) * 255)
-                    var yyy = 0.0
-                    var yyf = ((yy - 16).float / 235) / 4
-                    let af = sA / 255
-
-                    if af < 0.25:
-                        yyy = 0 + yyf * 0.9
-                    elif af < 0.5:
-                        yyy = 0.25 + yyf * 0.9
-                    elif af < 0.75:
-                        yyy = 0.5 + yyf * 0.9
-                    else:
-                        yyy = 0.75 + yyf
+                    when encodeAlphaToY:
+                        yy = encode(yy.float / 255, sA / 255)
 
                     let py = cast[ptr uint8](cast[uint](img.planes[0]) + uint(y * img.stride[0] + x))
-
-                    py[] = uint8(yyy * 235) + 16
-
-                    #py[] = uint8(yy)
+                    py[] = uint8(yy)
                     let pu = cast[ptr uint8](cast[uint](img.planes[1]) + uint((y div 2) * img.stride[1] + (x div 2)))
                     pu[] = uint8(uu)
                     let pv = cast[ptr uint8](cast[uint](img.planes[2]) + uint((y div 2) * img.stride[2] + (x div 2)))
