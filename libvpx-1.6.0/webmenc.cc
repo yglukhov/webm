@@ -76,6 +76,15 @@ void write_webm_file_header(struct WebmOutputContext *webm_ctx,
   webm_ctx->segment = segment;
 }
 
+void write_webm_chapter(struct WebmOutputContext *webm_ctx, const char* name, uint64_t start, uint64_t end) {
+  mkvmuxer::Segment *const segment =
+      reinterpret_cast<mkvmuxer::Segment*>(webm_ctx->segment);
+
+  mkvmuxer::Chapter* chapter = segment->AddChapter();
+  chapter->set_id(name);
+  chapter->set_time(*segment, start, end);
+}
+
 void write_webm_block(struct WebmOutputContext *webm_ctx,
                       const vpx_codec_enc_cfg_t *cfg,
                       const vpx_codec_cx_pkt_t *pkt) {

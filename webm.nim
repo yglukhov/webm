@@ -583,6 +583,10 @@ proc webm_read_frame(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buff
 
 proc webm_read_frame_alpha(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc.}
 
+proc webm_get_cluster_by_time(webm_ctx: ptr WebmInputContext, time_ns: uint64) {.importc.}
+
+proc webm_get_chapters(webm_ctx: ptr WebmInputContext, names: ptr cstring, startTimes, endTimes: ptr uint64): cint {.importc.}
+
 proc vpx_codec_decode(ctx: ptr vpx_codec_ctx_t, data: ptr uint8, data_sz: cuint, user_priv: pointer, deadline: clong): vpx_codec_err_t {.importc.}
 
 proc vpx_codec_get_frame(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_image_t {.importc.}
@@ -615,6 +619,8 @@ proc write_webm_file_header(webm_ctx: ptr WebmOutputContext,
                             fourcc: cuint,
                             par: ptr VpxRational) {.importc.}
 
+proc write_webm_chapter(webm_ctx: ptr WebmOutputContext, name: cstring, a, b: uint64) {.importc.}
+
 proc write_webm_block(webm_ctx: ptr WebmOutputContext, cfg: ptr vpx_codec_enc_cfg_t, pkt: ptr vpx_codec_cx_pkt_t) {.importc.}
 proc write_webm_file_footer(webm_ctx: ptr WebmOutputContext) {.importc.}
 
@@ -637,6 +643,17 @@ type WebmReader* = ref object
     buffer: ptr uint8
     bufferCap: csize
     iter: vpx_codec_iter_t
+
+proc chapters*(r: WebmReader): seq[tuple[name: string, a, b: uint64]] =
+    let count = webm_get_chapters(addr r.webmctx, nil, nil, nil).int
+    result = @[]
+    if count == 0: return
+    var names = newSeq[cstring](count)
+    var startTimes = newSeq[uint64](count)
+    var endTimes = newSeq[uint64](count)
+    discard webm_get_chapters(addr r.webmctx, addr names[0], addr startTimes[0], addr endTimes[0])
+    for i in 0 ..< count:
+        result.add(($names[i], startTimes[i], endTimes[i]))
 
 proc free(r: WebmReader) =
     webm_free(addr r.webmctx)
@@ -718,6 +735,17 @@ proc alphaImage*(r: WebmReader): ptr vpx_image_t =
     result = vpx_codec_get_frame(addr r.alpha_decoder, addr iter)
 
 proc frameTimestamp*(r: WebmReader): uint64 = r.webmctx.timestamp_ns
+
+proc rewindToNearestKeyframeAtTime*(r: WebmReader, t: float) =
+    let t = uint64(t * 1000000000)
+    webm_get_cluster_by_time(addr r.webmctx, t)
+
+proc rewindToTime*(r: WebmReader, t: float) =
+    let t = uint64(t * 1000000000)
+    webm_get_cluster_by_time(addr r.webmctx, t)
+    while r.webmctx.timestamp_ns < t:
+        if not r.decodeNextFrame():
+            break
 
 proc nextFrame*(r: WebmReader, alpha: var ptr vpx_image_t): ptr vpx_image_t =
     if r.decodeNextFrame():
@@ -850,19 +878,11 @@ when isMainModule:
                             VP9_FOURCC,
                             addr pixel_aspect_ratio)
 
+        write_webm_chapter(addr ctx, "enter", 0, 300000000)
+        write_webm_chapter(addr ctx, "exit", 300000000, 600000000)
+
         if vpx_codec_enc_init_ver(addr codec, vpx_codec_vp9_cx(), addr cfg, 0) != 0:
             raise newException(Exception, "Failed to initialize encoder")
-
-        proc encodeAlphaInComponent(comp, alpha: float): float =
-            let cf = comp / 4
-            if alpha < 0.25:
-                result = 0 + cf
-            elif alpha < 0.5:
-                result = 0.25 + cf
-            elif alpha < 0.75:
-                result = 0.5 + cf
-            else:
-                result = 0.75 + cf
 
         const encodeAlphaToY = true
 

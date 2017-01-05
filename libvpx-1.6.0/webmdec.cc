@@ -253,3 +253,38 @@ int webm_guess_framerate(struct WebmInputContext *webm_ctx,
 void webm_free(struct WebmInputContext *webm_ctx) {
   reset(webm_ctx);
 }
+
+void webm_get_cluster_by_time(struct WebmInputContext *webm_ctx, uint64_t time_ns) {
+  mkvparser::Segment *const segment =
+      reinterpret_cast<mkvparser::Segment*>(webm_ctx->segment);
+
+  const mkvparser::Cluster* cluster = segment->FindCluster(time_ns);
+  if (cluster != NULL) {
+    webm_ctx->cluster = cluster;
+    webm_ctx->block = NULL;
+    webm_ctx->block_entry = NULL;
+    webm_ctx->timestamp_ns = cluster->GetTime();
+    webm_ctx->reached_eos = 0;
+  }
+}
+
+int webm_get_chapters(struct WebmInputContext *webm_ctx, const char** names, uint64_t* startTimes, uint64_t* endTimes) {
+  mkvparser::Segment *const segment =
+      reinterpret_cast<mkvparser::Segment*>(webm_ctx->segment);
+  const mkvparser::Chapters * chapters = segment->GetChapters();
+  int count = chapters->GetEditionCount();
+  if (count == 0) return 0;
+
+  const mkvparser::Chapters::Edition* edition = chapters->GetEdition(0);
+  int atoms = edition->GetAtomCount();
+  if (names == NULL) return atoms;
+
+  for (int j = 0; j < atoms; ++j) {
+    const mkvparser::Chapters::Atom* atom = edition->GetAtom(j);
+    names[j] = atom->GetStringUID();
+    startTimes[j] = atom->GetStartTime(chapters);
+    endTimes[j] = atom->GetStopTime(chapters);
+  }
+
+  return atoms;
+}
