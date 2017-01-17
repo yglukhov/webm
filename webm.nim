@@ -763,8 +763,7 @@ proc encode_frame(codec: ptr vpx_codec_ctx_t, img: ptr vpx_image_t,
   var iter: vpx_codec_iter_t
   var pkt: ptr vpx_codec_cx_pkt_t
 
-  let res = vpx_codec_encode(codec, img, frame_index, 1,
-                                               flags, VPX_DL_GOOD_QUALITY)
+  let res = vpx_codec_encode(codec, img, frame_index, 1, flags, VPX_DL_GOOD_QUALITY)
   if (res != 0):
     raise newException(Exception, "Failed to encode frame")
 
@@ -878,8 +877,34 @@ when isMainModule:
                             VP9_FOURCC,
                             addr pixel_aspect_ratio)
 
-        write_webm_chapter(addr ctx, "enter", 0, 300000000)
-        write_webm_chapter(addr ctx, "exit", 300000000, 600000000)
+        const totalFrames = 404
+
+        const chapters = { "enter": 0,
+                            "spin_1": 23,
+                            "spin_2": 43,
+                            "spin_3": 87,
+                            "nowin": 145,
+                            "anticipation": 162,
+                            "win": 196,
+                            "multiwin": 217,
+                            "gotobonus": 244,
+                            "run_loop_start": 251,
+                            "run_loop_end": 266,
+                            "wild": 298,
+                            "idle": 330,
+                            "scatter": 368
+                        }
+
+        template frameToTime(f: int): uint64 = uint64(f) * 33333333
+
+        for i in 0 ..< chapters.len:
+            var endTime: uint64
+            if i < chapters.len - 1:
+                endTime = frameToTime(chapters[i + 1][1])
+            else:
+                endTime = frameToTime(totalFrames)
+
+            write_webm_chapter(addr ctx, chapters[i][0], frameToTime(chapters[i][1]), endTime)
 
         if vpx_codec_enc_init_ver(addr codec, vpx_codec_vp9_cx(), addr cfg, 0) != 0:
             raise newException(Exception, "Failed to initialize encoder")
@@ -894,7 +919,7 @@ when isMainModule:
 
         var curFr = 0
         proc nextFrame(img: ptr vpx_image_t): bool =
-            if curFr > 30: return false
+            if curFr > 404: return false
             echo "fr: ", curFr
 
             var idx = $curFr
@@ -928,8 +953,12 @@ when isMainModule:
         var frames_encoded = 0
         while nextFrame(addr raw):
             var flags: cint
-            if (keyframe_interval > 0 and frame_count mod keyframe_interval == 0):
-              flags = VPX_EFLAG_FORCE_KF
+            for c in chapters:
+                if frame_count == c[1]:
+                    flags = VPX_EFLAG_FORCE_KF
+                    break
+#            if (keyframe_interval > 0 and frame_count mod keyframe_interval == 0):
+#              flags = VPX_EFLAG_FORCE_KF
             discard encode_frame(addr codec, addr raw, frame_count, flags, rh, addr cfg, addr ctx)
             inc frame_count
             inc frames_encoded
