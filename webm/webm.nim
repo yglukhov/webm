@@ -253,33 +253,33 @@ proc vpxFiles(): seq[string] {.compileTime.} =
 const sources = vpxFiles()
 clurp(sources)
 
-const VPX_IMG_FMT_UV_FLIP =   0x200  #/**< V plane precedes U in memory. */
-const VPX_IMG_FMT_HAS_ALPHA =  0x400  #/**< Image has an alpha channel. */
-const VPX_IMG_FMT_HIGHBITDEPTH = 0x800  #/**< Image uses 16bit framebuffer. */
+const VPX_IMG_FMT_UV_FLIP* =   0x200  #/**< V plane precedes U in memory. */
+const VPX_IMG_FMT_HAS_ALPHA* =  0x400  #/**< Image has an alpha channel. */
+const VPX_IMG_FMT_HIGHBITDEPTH* = 0x800  #/**< Image uses 16bit framebuffer. */
 
-const VPX_SS_MAX_LAYERS = 5
-const VPX_MAX_LAYERS = 12
-const VPX_TS_MAX_PERIODICITY = 16
+const VPX_SS_MAX_LAYERS* = 5
+const VPX_MAX_LAYERS* = 12
+const VPX_TS_MAX_PERIODICITY* = 16
 
 
-const VPX_DL_GOOD_QUALITY = 1000000
+const VPX_DL_GOOD_QUALITY* = 1000000
 
-const VPX_CODEC_CX_FRAME_PKT = 0
-const VPX_FRAME_IS_KEY = 0x1
+const VPX_CODEC_CX_FRAME_PKT* = 0
+const VPX_FRAME_IS_KEY* = 0x1
 
 
 type
     WebmInputContext* = object
         reader: pointer
         segment: pointer
-        buffer: ptr uint8
+        buffer*: ptr uint8
         cluster: pointer
         block_entry: pointer
         blck: pointer
         block_frame_index: cint
         video_track_index: cint
-        timestamp_ns: uint64
-        is_key_frame: cint
+        timestamp_ns*: uint64
+        is_key_frame*: cint
         reached_eos: cint
 
     FileTypeDetectionBuffer = object
@@ -287,24 +287,24 @@ type
         buf_read: csize
         position: csize
 
-    VideoFileType = enum
+    VideoFileType* = enum
         FILE_TYPE_RAW
         FILE_TYPE_IVF
         FILE_TYPE_Y4M
         FILE_TYPE_WEBM
 
-    VpxRational = object
-        numerator: cint
-        denominator: cint
+    VpxRational* = object
+        numerator*: cint
+        denominator*: cint
 
     VpxInputContext* = object
         filename: cstring
-        file: File
+        file*: File
         length: int64
         detect: FileTypeDetectionBuffer
-        file_type: VideoFileType
-        width: uint32
-        height: uint32
+        file_type*: VideoFileType
+        width*: uint32
+        height*: uint32
         pixel_aspect_ratio: VpxRational
         fmt: cint
 
@@ -313,15 +313,15 @@ type
         fourcc: uint32
         framerate: VpxRational
 
-    VpxDecInputContext = object
-        vpx_input_ctx: ptr VpxInputContext
-        webm_ctx: ptr WebmInputContext
+    VpxDecInputContext* = object
+        vpx_input_ctx*: ptr VpxInputContext
+        webm_ctx*: ptr WebmInputContext
 
-    vpx_codec_flags_t = clong
+    vpx_codec_flags_t* = clong
 
-    vpx_codec_err_t = cint
+    vpx_codec_err_t* = cint
 
-    vpx_codec_ctx_t = object
+    vpx_codec_ctx_t* = object
         name: cstring ## Printable interface name
         iface: pointer ## Interface pointers
         err: vpx_codec_err_t ## Last returned error
@@ -330,21 +330,21 @@ type
         config: pointer ## Configuration pointer aliasing union
         priv: pointer ## Algorithm private storage
 
-    vpx_codec_iface_ptr = pointer
+    vpx_codec_iface_ptr* = pointer
 
     # VpxInterface = object
     #     name: cstring
     #     fourcc: uint32
     #     codec_interface: proc(): vpx_codec_iface_ptr {.cdecl.}
 
-    vpx_codec_dec_cfg_t = object
+    vpx_codec_dec_cfg_t* = object
         threads: cuint
         w: cuint
         h: cuint
 
-    vpx_codec_iter_t = distinct pointer
+    vpx_codec_iter_t* = distinct pointer
 
-    vpx_img_fmt_t = cint
+    vpx_img_fmt_t* = cint
     # List of supported image formats */
     # vpx_img_fmt_t = enum
     #     VPX_IMG_FMT_NONE,
@@ -435,37 +435,37 @@ type
 
         fb_priv: pointer # Frame buffer data associated with the image.
 
-    VpxVideoInfo = object
+    VpxVideoInfo* = object
         codec_fourcc: uint32
         frame_width: cint
         frame_height: cint
         time_base: VpxRational
 
-    VpxVideoWriter = object
+    VpxVideoWriter* = object
         info: VpxVideoInfo
-        file: File
+        file*: File
         frame_count: cint
 
-    vpx_bit_depth_t = cint # enum
-    vpx_codec_er_flags_t = uint32
-    vpx_enc_pass = cint # enum
-    vpx_rc_mode = cint # enum
-    vpx_kf_mode = cint # enum
+    vpx_bit_depth_t* = cint # enum
+    vpx_codec_er_flags_t* = uint32
+    vpx_enc_pass* = cint # enum
+    vpx_rc_mode* = cint # enum
+    vpx_kf_mode* = cint # enum
 
-    vpx_fixed_buf_t = object
+    vpx_fixed_buf_t* = object
         buf: pointer
         sz: csize
 
-    vpx_codec_enc_cfg_t = object
+    vpx_codec_enc_cfg_t* = object
         g_usage: cuint
         g_threads: cuint
         g_profile: cuint
-        g_w: cuint
-        g_h: cuint
+        g_w*: cuint
+        g_h*: cuint
         g_bit_depth: vpx_bit_depth_t
         g_input_bit_depth: cuint
-        g_timebase: VpxRational
-        g_error_resilient: vpx_codec_er_flags_t
+        g_timebase*: VpxRational
+        g_error_resilient*: vpx_codec_er_flags_t
         g_pass: vpx_enc_pass
         g_lag_in_frames: cuint
         rc_dropframe_thresh: cuint
@@ -477,7 +477,7 @@ type
         rc_end_usage: vpx_rc_mode
         rc_twopass_stats_in: vpx_fixed_buf_t
         rc_firstpass_mb_stats_in: vpx_fixed_buf_t
-        rc_target_bitrate: cuint
+        rc_target_bitrate*: cuint
         rc_min_quantizer: cuint
         rc_max_quantizer: cuint
         rc_undershoot_pct: cuint
@@ -502,27 +502,27 @@ type
         layer_target_bitrate: array[VPX_MAX_LAYERS, cuint]
         temporal_layering_mode: cint
 
-    vpx_codec_cx_pkt_kind = cint # enum
+    vpx_codec_cx_pkt_kind* = cint # enum
 
-    vpx_codec_pts_t = int64
-    vpx_codec_frame_flags_t = uint32
-    vpx_enc_frame_flags_t = clong
+    vpx_codec_pts_t* = int64
+    vpx_codec_frame_flags_t* = uint32
+    vpx_enc_frame_flags_t* = clong
 
-    vpx_codec_cx_pkt_payload_frame = object
+    vpx_codec_cx_pkt_payload_frame* = object
         buf: pointer
         sz: csize
         pts: vpx_codec_pts_t
         duration: culong
-        flags: vpx_codec_frame_flags_t
+        flags*: vpx_codec_frame_flags_t
         partition_id: cint
 
-    vpx_psnr_pkt = object
+    vpx_psnr_pkt* = object
         samples: array[4, cuint]
         sse: array[4, uint64]
         psnr: array[4, cdouble]
 
-    vpx_codec_cx_pkt_payload = object {.union.}
-        frame: vpx_codec_cx_pkt_payload_frame
+    vpx_codec_cx_pkt_payload* = object {.union.}
+        frame*: vpx_codec_cx_pkt_payload_frame
         twopass_stats: vpx_fixed_buf_t
         firstpass_mb_stats: vpx_fixed_buf_t
         psnr: vpx_psnr_pkt
@@ -531,32 +531,32 @@ type
         layer_psnr: array[VPX_SS_MAX_LAYERS, vpx_psnr_pkt]
         pad: array[128 - sizeof(vpx_codec_cx_pkt_kind), char]
 
-    vpx_codec_cx_pkt_t = object
-        kind: vpx_codec_cx_pkt_kind
-        data: vpx_codec_cx_pkt_payload
+    vpx_codec_cx_pkt_t* = object
+        kind*: vpx_codec_cx_pkt_kind
+        data*: vpx_codec_cx_pkt_payload
 
-    stereo_format_t = cint # enum
+    stereo_format_t* = cint # enum
 
-    WebmOutputContext = object
+    WebmOutputContext* = object
         debug: cint
-        stream: File
-        last_pts_ns: int64
+        stream*: File
+        last_pts_ns*: int64
         writer: pointer
         segment: pointer
 
-    rate_hist_t = distinct pointer
+    rate_hist_t* = distinct pointer
 
 # proc usage_exit() {.exportc.} =
 #     raise newException(Exception, "die")
 
-const VP9_FOURCC = 0x30395056'u32
+const VP9_FOURCC* = 0x30395056'u32
 
-const VPX_EFLAG_FORCE_KF = 1 shl 0
+const VPX_EFLAG_FORCE_KF* = 1 shl 0
 
-proc file_is_webm(webm_ctx: ptr WebmInputContext,
+proc file_is_webm*(webm_ctx: ptr WebmInputContext,
                             vpx_ctx: ptr VpxInputContext): cint {.importc.}
 
-proc webm_guess_framerate(webm_ctx: ptr WebmInputContext,
+proc webm_guess_framerate*(webm_ctx: ptr WebmInputContext,
                             vpx_ctx: ptr VpxInputContext): cint {.importc.}
 
 const VPX_IMAGE_ABI_VERSION = 4
@@ -567,408 +567,69 @@ const VPX_DECODER_ABI_VERSION = (3 + VPX_CODEC_ABI_VERSION)
 const VPX_ENCODER_ABI_VERSION = (5 + VPX_CODEC_ABI_VERSION)
 
 
-proc vpx_codec_dec_init_ver(ctx: ptr vpx_codec_ctx_t, iface: vpx_codec_iface_ptr,
+proc vpx_codec_dec_init_ver*(ctx: ptr vpx_codec_ctx_t, iface: vpx_codec_iface_ptr,
         cfg: ptr vpx_codec_dec_cfg_t, flags: vpx_codec_flags_t, ver: cint = VPX_DECODER_ABI_VERSION): vpx_codec_err_t {.importc.}
 
 
-proc vpx_codec_enc_init_ver(ctx: ptr vpx_codec_ctx_t, iface: vpx_codec_iface_ptr, cfg: ptr vpx_codec_enc_cfg_t,
+proc vpx_codec_enc_init_ver*(ctx: ptr vpx_codec_ctx_t, iface: vpx_codec_iface_ptr, cfg: ptr vpx_codec_enc_cfg_t,
     flags: vpx_codec_flags_t, ver: cint = VPX_ENCODER_ABI_VERSION): vpx_codec_err_t {.importc.}
 
 
-proc vpx_codec_error(ctx: ptr vpx_codec_ctx_t): cstring {.importc.}
+proc vpx_codec_error*(ctx: ptr vpx_codec_ctx_t): cstring {.importc.}
 
-proc vpx_codec_destroy(ctx: ptr vpx_codec_ctx_t): vpx_codec_err_t {.importc.}
+proc vpx_codec_destroy*(ctx: ptr vpx_codec_ctx_t): vpx_codec_err_t {.importc.}
 
-proc webm_read_frame(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc.}
+proc webm_read_frame*(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc.}
 
-proc webm_read_frame_alpha(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc.}
+proc webm_read_frame_alpha*(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc.}
 
-proc webm_get_cluster_by_time(webm_ctx: ptr WebmInputContext, time_ns: uint64) {.importc.}
+proc webm_get_cluster_by_time*(webm_ctx: ptr WebmInputContext, time_ns: uint64) {.importc.}
 
-proc webm_get_chapters(webm_ctx: ptr WebmInputContext, names: ptr cstring, startTimes, endTimes: ptr uint64): cint {.importc.}
+proc webm_get_chapters*(webm_ctx: ptr WebmInputContext, names: ptr cstring, startTimes, endTimes: ptr uint64): cint {.importc.}
 
-proc vpx_codec_decode(ctx: ptr vpx_codec_ctx_t, data: ptr uint8, data_sz: cuint, user_priv: pointer, deadline: clong): vpx_codec_err_t {.importc.}
+proc vpx_codec_decode*(ctx: ptr vpx_codec_ctx_t, data: ptr uint8, data_sz: cuint, user_priv: pointer, deadline: clong): vpx_codec_err_t {.importc.}
 
-proc vpx_codec_get_frame(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_image_t {.importc.}
+proc vpx_codec_get_frame*(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_image_t {.importc.}
 
-proc vpx_codec_error_detail(ctx: ptr vpx_codec_ctx_t): cstring {.importc.}
+proc vpx_codec_error_detail*(ctx: ptr vpx_codec_ctx_t): cstring {.importc.}
 
-proc rewind(file: File) {.importc.}
+proc rewind*(file: File) {.importc.}
 
-proc webm_free(webm_ctx: ptr WebmInputContext) {.importc.}
+proc webm_free*(webm_ctx: ptr WebmInputContext) {.importc.}
 
-proc vpx_img_alloc(img: ptr vpx_image_t, fmt: vpx_img_fmt_t, d_w, d_h, align: cuint): ptr vpx_image_t {.importc.}
-proc vpx_img_free(img: ptr vpx_image_t) {.importc.}
+proc vpx_img_alloc*(img: ptr vpx_image_t, fmt: vpx_img_fmt_t, d_w, d_h, align: cuint): ptr vpx_image_t {.importc.}
+proc vpx_img_free*(img: ptr vpx_image_t) {.importc.}
 
-proc vpx_codec_vp9_cx(): vpx_codec_iface_ptr {.importc.}
-proc vpx_codec_vp9_dx(): vpx_codec_iface_ptr {.importc.}
+proc vpx_codec_vp9_cx*(): vpx_codec_iface_ptr {.importc.}
+proc vpx_codec_vp9_dx*(): vpx_codec_iface_ptr {.importc.}
 
 
-proc vpx_codec_enc_config_default(iface: vpx_codec_iface_ptr, cfg: ptr vpx_codec_enc_cfg_t, usage: cuint): vpx_codec_err_t {.importc.}
+proc vpx_codec_enc_config_default*(iface: vpx_codec_iface_ptr, cfg: ptr vpx_codec_enc_cfg_t, usage: cuint): vpx_codec_err_t {.importc.}
 
-proc vpx_codec_encode(ctx: ptr vpx_codec_ctx_t, img: ptr vpx_image_t, pts: vpx_codec_pts_t,
+proc vpx_codec_encode*(ctx: ptr vpx_codec_ctx_t, img: ptr vpx_image_t, pts: vpx_codec_pts_t,
         duration: culong, flags: vpx_enc_frame_flags_t, deadline: culong): vpx_codec_err_t {.importc.}
 
-proc vpx_codec_get_cx_data(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_codec_cx_pkt_t {.importc.}
+proc vpx_codec_get_cx_data*(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_codec_cx_pkt_t {.importc.}
 
 
-proc write_webm_file_header(webm_ctx: ptr WebmOutputContext,
+proc write_webm_file_header*(webm_ctx: ptr WebmOutputContext,
                             cfg: ptr vpx_codec_enc_cfg_t,
                             fps: ptr VpxRational,
                             stereo_fmt: stereo_format_t,
                             fourcc: cuint,
                             par: ptr VpxRational) {.importc.}
 
-proc write_webm_chapter(webm_ctx: ptr WebmOutputContext, name: cstring, a, b: uint64) {.importc.}
+proc write_webm_chapter*(webm_ctx: ptr WebmOutputContext, name: cstring, a, b: uint64) {.importc.}
 
-proc write_webm_block(webm_ctx: ptr WebmOutputContext, cfg: ptr vpx_codec_enc_cfg_t, pkt: ptr vpx_codec_cx_pkt_t) {.importc.}
-proc write_webm_file_footer(webm_ctx: ptr WebmOutputContext) {.importc.}
+proc write_webm_block*(webm_ctx: ptr WebmOutputContext, cfg: ptr vpx_codec_enc_cfg_t, pkt: ptr vpx_codec_cx_pkt_t) {.importc.}
+proc write_webm_file_footer*(webm_ctx: ptr WebmOutputContext) {.importc.}
 
-proc init_rate_histogram(cfg: ptr vpx_codec_enc_cfg_t, fps: ptr VpxRational): rate_hist_t {.importc.}
-proc destroy_rate_histogram(hist: rate_hist_t) {.importc.}
+proc init_rate_histogram*(cfg: ptr vpx_codec_enc_cfg_t, fps: ptr VpxRational): rate_hist_t {.importc.}
+proc destroy_rate_histogram*(hist: rate_hist_t) {.importc.}
 
-proc update_rate_histogram(hist: rate_hist_t,
+proc update_rate_histogram*(hist: rate_hist_t,
                            cfg: ptr vpx_codec_enc_cfg_t,
                            pkt: ptr vpx_codec_cx_pkt_t) {.importc.}
 
-const VPX_IMG_FMT_PLANAR    = 0x100
-const VPX_IMG_FMT_I420 = VPX_IMG_FMT_PLANAR or 2
-
-type WebmReader* = ref object
-    webmctx: WebmInputContext
-    vpxctx: VpxInputContext
-    decoder: vpx_codec_ctx_t
-    alpha_decoder: vpx_codec_ctx_t
-    cfg: vpx_codec_dec_cfg_t
-    buffer: ptr uint8
-    bufferCap: csize
-    iter: vpx_codec_iter_t
-
-proc chapters*(r: WebmReader): seq[tuple[name: string, a, b: uint64]] =
-    let count = webm_get_chapters(addr r.webmctx, nil, nil, nil).int
-    result = @[]
-    if count == 0: return
-    var names = newSeq[cstring](count)
-    var startTimes = newSeq[uint64](count)
-    var endTimes = newSeq[uint64](count)
-    discard webm_get_chapters(addr r.webmctx, addr names[0], addr startTimes[0], addr endTimes[0])
-    for i in 0 ..< count:
-        result.add(($names[i], startTimes[i], endTimes[i]))
-
-proc free(r: WebmReader) =
-    webm_free(addr r.webmctx)
-    discard vpx_codec_destroy(addr r.decoder)
-    discard vpx_codec_destroy(addr r.alpha_decoder)
-
-proc init(r: WebmReader) =
-    r.vpxctx.file_type = FILE_TYPE_WEBM
-    if file_is_webm(addr r.webmctx, addr r.vpxctx) == 0:
-        raise newException(Exception, "Invalid file format")
-    discard webm_guess_framerate(addr r.webmctx, addr r.vpxctx)
-
-    var res = vpx_codec_dec_init_ver(addr r.decoder, vpx_codec_vp9_dx(), addr r.cfg, 0)
-    if res != 0:
-        echo "Error initializing codec: ", vpx_codec_error(addr r.decoder)
-
-    res = vpx_codec_dec_init_ver(addr r.alpha_decoder, vpx_codec_vp9_dx(), addr r.cfg, 0)
-    if res != 0:
-        echo "Error initializing alpha codec: ", vpx_codec_error(addr r.alpha_decoder)
-
-proc newReader*(path: string): WebmReader =
-    result.new(free)
-    result.vpxctx.file = open(path)
-    if result.vpxctx.file.isNil:
-        echo "FILE IS NIL!"
-    result.init()
-
-proc rewind*(r: WebmReader) =
-    let f = r.vpxctx.file
-    r.webmctx.buffer = nil
-    free(r)
-    zeroMem(addr r.webmctx, sizeof(r.webmctx))
-    zeroMem(addr r.vpxctx, sizeof(r.vpxctx))
-    zeroMem(addr r.cfg, sizeof(r.cfg))
-    zeroMem(addr r.decoder, sizeof(r.decoder))
-    zeroMem(addr r.alpha_decoder, sizeof(r.alpha_decoder))
-    rewind(f)
-    r.vpxctx.file = f
-    r.webmctx.buffer = r.buffer
-    r.init()
-
-proc decodeNextFrame*(r: WebmReader): bool =
-    var flushDecoder = false
-    var sz = r.bufferCap
-
-    var readStatus = webm_read_frame(addr r.webmctx, addr r.buffer, addr sz)
-    if sz > r.bufferCap: r.bufferCap = sz
-
-    if readStatus == 0:
-        let res = vpx_codec_decode(addr r.decoder, r.buffer, sz.cuint, nil, 0)
-        if res != 0:
-            echo "decode error: ", res, ": ", vpx_codec_error_detail(addr r.decoder)
-            return
-    else:
-        flushDecoder = true
-
-    if flushDecoder:
-        if vpx_codec_decode(addr r.decoder, nil, 0, nil, 0) != 0:
-            echo "Failed to flush decoder"
-            return
-
-    sz = r.bufferCap
-    readStatus = webm_read_frame_alpha(addr r.webmctx, addr r.buffer, addr sz)
-    if sz > r.bufferCap: r.bufferCap = sz
-
-    if readStatus == 0:
-        let res = vpx_codec_decode(addr r.alpha_decoder, r.buffer, sz.cuint, nil, 0)
-        if res != 0:
-            echo "alpha decode error: ", res, ": ", vpx_codec_error_detail(addr r.alpha_decoder)
-
-    result = true
-
-proc frameImage*(r: WebmReader): ptr vpx_image_t =
-    var iter: vpx_codec_iter_t
-    result = vpx_codec_get_frame(addr r.decoder, addr iter)
-
-proc alphaImage*(r: WebmReader): ptr vpx_image_t =
-    var iter: vpx_codec_iter_t
-    result = vpx_codec_get_frame(addr r.alpha_decoder, addr iter)
-
-proc frameTimestamp*(r: WebmReader): uint64 = r.webmctx.timestamp_ns
-
-proc rewindToNearestKeyframeAtTime*(r: WebmReader, t: float) =
-    let t = uint64(t * 1000000000)
-    webm_get_cluster_by_time(addr r.webmctx, t)
-
-proc rewindToTime*(r: WebmReader, t: float) =
-    let t = uint64(t * 1000000000)
-    webm_get_cluster_by_time(addr r.webmctx, t)
-    while r.webmctx.timestamp_ns < t:
-        if not r.decodeNextFrame():
-            break
-
-proc nextFrame*(r: WebmReader, alpha: var ptr vpx_image_t): ptr vpx_image_t =
-    if r.decodeNextFrame():
-        result = r.frameImage()
-        alpha = r.alphaImage()
-
-proc width*(r: WebmReader): int = r.vpxctx.width.int
-proc height*(r: WebmReader): int = r.vpxctx.height.int
-
-proc encode_frame(codec: ptr vpx_codec_ctx_t, img: ptr vpx_image_t,
-                    frame_index, flags: cint,
-                    rate_hist: rate_hist_t,
-                    cfg: ptr vpx_codec_enc_cfg_t,
-                    ctx: ptr WebmOutputContext): bool =
-  var iter: vpx_codec_iter_t
-  var pkt: ptr vpx_codec_cx_pkt_t
-
-  let res = vpx_codec_encode(codec, img, frame_index, 1, flags, VPX_DL_GOOD_QUALITY)
-  if (res != 0):
-    raise newException(Exception, "Failed to encode frame")
-
-  while true:
-    pkt = vpx_codec_get_cx_data(codec, addr iter)
-    if pkt.isNil: break
-    result = true
-
-    if (pkt.kind == VPX_CODEC_CX_FRAME_PKT):
-      let keyframe = (pkt.data.frame.flags and VPX_FRAME_IS_KEY) != 0
-      update_rate_histogram(rate_hist, cfg, pkt);
-      write_webm_block(ctx, cfg, pkt)
-
-      echo if keyframe: "K" else: "."
-
-when isMainModule:
-    proc testDecode() =
-        var webmctx: WebmInputContext
-        var vpxctx: VpxInputContext
-        var input: VpxDecInputContext
-        input.vpx_input_ctx = addr vpxctx
-        input.webm_ctx = addr webmctx
-        vpxctx.file = open("output.webm")
-        vpxctx.file_type = FILE_TYPE_WEBM
-        echo file_is_webm(input.webm_ctx, input.vpx_input_ctx)
-        echo webm_guess_framerate(input.webm_ctx, input.vpx_input_ctx)
-        var decoder: vpx_codec_ctx_t
-
-        var cfg: vpx_codec_dec_cfg_t
-
-        let i = vpx_codec_dec_init_ver(addr decoder, vpx_codec_vp9_dx(), addr cfg, 0)
-        if i != 0:
-            echo vpx_codec_error(addr decoder)
-
-
-        var buf: ptr uint8
-        var bytes_in_buffer: csize
-
-        var flush_decoder = false
-        if webm_read_frame(input.webm_ctx, addr buf, addr bytes_in_buffer) == 0:
-            let res = vpx_codec_decode(addr decoder, buf, cuint(bytes_in_buffer), nil, 0)
-            if res != 0:
-                echo "decode error: ", res, ": ", vpx_codec_error_detail(addr decoder)
-        else:
-            flush_decoder = true
-
-        if flush_decoder:
-            if vpx_codec_decode(addr decoder, nil, 0, nil, 0) != 0:
-                echo "Failed to flush decoder"
-
-        var got_data = false
-        var iter: vpx_codec_iter_t
-        let img = vpx_codec_get_frame(addr decoder, addr iter)
-        if not img.isNil:
-            echo "Got DATA!"
-            if (img.fmt and VPX_IMG_FMT_PLANAR) != 0:
-                echo "PLANAR"
-            if img.fmt == VPX_IMG_FMT_I420:
-                echo "VPX_IMG_FMT_I420"
-            echo img.fmt
-            echo img.cs
-            echo img.rng
-
-#    testDecode()
-
-    import nimPNG, random, imgtools.imgtools
-
-    proc testEncode() =
-        var cfg: vpx_codec_enc_cfg_t
-        var codec: vpx_codec_ctx_t
-        var raw: vpx_image_t
-        var ctx: WebmOutputContext
-        ctx.last_pts_ns = -1
-
-        const bitrate = 2000
-
-        let max_frames = 0
-
-        let width = 600
-        let height = 540
-        var fps: VpxRational
-        fps.numerator = 1
-        fps.denominator = 30
-
-        if vpx_img_alloc(addr raw, VPX_IMG_FMT_I420, cuint(width), cuint(height), 1) == nil:
-            raise newException(Exception, "Could not alloc image")
-
-        let keyframe_interval = 0
-
-        var res = vpx_codec_enc_config_default(vpx_codec_vp9_cx(), addr cfg, 0)
-        if res != 0:
-            raise newException(Exception, "vpx_codec_enc_config_default")
-
-        cfg.g_w = cuint(width)
-        cfg.g_h = cuint(height)
-        cfg.g_timebase = fps
-        cfg.rc_target_bitrate = bitrate
-        cfg.g_error_resilient = 0
-
-        let rh = init_rate_histogram(addr cfg, addr fps)
-
-        var pixel_aspect_ratio: VpxRational
-        pixel_aspect_ratio.numerator = 1
-        pixel_aspect_ratio.denominator = 1
-
-        ctx.stream = open("out.webm", fmWrite)
-        write_webm_file_header(addr ctx,
-                            addr cfg,
-                            addr fps,
-                            0,
-                            VP9_FOURCC,
-                            addr pixel_aspect_ratio)
-
-        const totalFrames = 404
-
-        const chapters = { "enter": 0,
-                            "spin_1": 23,
-                            "spin_2": 43,
-                            "spin_3": 87,
-                            "nowin": 145,
-                            "anticipation": 162,
-                            "win": 196,
-                            "multiwin": 217,
-                            "gotobonus": 244,
-                            "run_loop_start": 251,
-                            "run_loop_end": 266,
-                            "wild": 298,
-                            "idle": 330,
-                            "scatter": 368
-                        }
-
-        template frameToTime(f: int): uint64 = uint64(f) * 33333333
-
-        for i in 0 ..< chapters.len:
-            var endTime: uint64
-            if i < chapters.len - 1:
-                endTime = frameToTime(chapters[i + 1][1])
-            else:
-                endTime = frameToTime(totalFrames)
-
-            write_webm_chapter(addr ctx, chapters[i][0], frameToTime(chapters[i][1]), endTime)
-
-        if vpx_codec_enc_init_ver(addr codec, vpx_codec_vp9_cx(), addr cfg, 0) != 0:
-            raise newException(Exception, "Failed to initialize encoder")
-
-        const encodeAlphaToY = true
-
-        when encodeAlphaToY:
-            proc encode(y, a: float): uint8 =
-                let yy = uint8(y * 63)
-                let aa = uint8(a * 3)
-                result = (aa shl 6) or yy
-
-        var curFr = 0
-        proc nextFrame(img: ptr vpx_image_t): bool =
-            if curFr > 404: return false
-            echo "fr: ", curFr
-
-            var idx = $curFr
-            while idx.len < 5: idx = "0" & idx
-            let p = loadPNG32("/Users/yglukhov/Projects/falcon/res/slots/candy_slot/boy/assets/Boy_candy_" & idx & ".png")
-
-            for y in 0 ..< height:
-                for x in 0 ..< width:
-                    let sR = int32(cast[uint8](p.data[(y * width + x) * 4]))
-                    let sG = int32(cast[uint8](p.data[(y * width + x) * 4 + 1]))
-                    let sB = int32(cast[uint8](p.data[(y * width + x) * 4 + 2]))
-                    let sA = int32(cast[uint8](p.data[(y * width + x) * 4 + 3]))
-
-                    var yy = cast[uint8]( (66*sR + 129*sG + 25*sB + 128) shr 8) + 16
-                    let uu = cast[uint8]( (-38*sR - 74*sG + 112*sB + 128) shr 8) + 128
-                    let vv = cast[uint8]( (112*sR - 94*sG - 18*sB + 128) shr 8) + 128
-
-                    when encodeAlphaToY:
-                        yy = encode(yy.float / 255, sA / 255)
-
-                    let py = cast[ptr uint8](cast[uint](img.planes[0]) + uint(y * img.stride[0] + x))
-                    py[] = uint8(yy)
-                    let pu = cast[ptr uint8](cast[uint](img.planes[1]) + uint((y div 2) * img.stride[1] + (x div 2)))
-                    pu[] = uint8(uu)
-                    let pv = cast[ptr uint8](cast[uint](img.planes[2]) + uint((y div 2) * img.stride[2] + (x div 2)))
-                    pv[] = uint8(vv)
-
-            result = true
-            inc curFr
-        var frame_count: cint
-        var frames_encoded = 0
-        while nextFrame(addr raw):
-            var flags: cint
-            for c in chapters:
-                if frame_count == c[1]:
-                    flags = VPX_EFLAG_FORCE_KF
-                    break
-#            if (keyframe_interval > 0 and frame_count mod keyframe_interval == 0):
-#              flags = VPX_EFLAG_FORCE_KF
-            discard encode_frame(addr codec, addr raw, frame_count, flags, rh, addr cfg, addr ctx)
-            inc frame_count
-            inc frames_encoded
-            if max_frames > 0 and frames_encoded >= max_frames:
-              break
-
-        while encode_frame(addr codec, nil, -1, 0, rh, addr cfg, addr ctx): discard
-
-        vpx_img_free(addr raw)
-        write_webm_file_footer(addr ctx)
-        destroy_rate_histogram(rh)
-
-    testEncode()
+const VPX_IMG_FMT_PLANAR* = 0x100
+const VPX_IMG_FMT_I420* = VPX_IMG_FMT_PLANAR or 2
