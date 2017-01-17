@@ -1,4 +1,5 @@
 import webm
+export vpx_image_t
 
 type WebmReader* = ref object
     webmctx: WebmInputContext
