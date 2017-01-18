@@ -62,6 +62,15 @@ proc rewind*(r: WebmReader) =
     r.webmctx.buffer = r.buffer
     r.init()
 
+proc close*(r: WebmReader) =
+    close(r.vpxctx.file)
+    free(r)
+    zeroMem(addr r.webmctx, sizeof(r.webmctx))
+    zeroMem(addr r.vpxctx, sizeof(r.vpxctx))
+    zeroMem(addr r.cfg, sizeof(r.cfg))
+    zeroMem(addr r.decoder, sizeof(r.decoder))
+    zeroMem(addr r.alpha_decoder, sizeof(r.alpha_decoder))
+
 proc decodeNextFrame*(r: WebmReader): bool =
     var flushDecoder = false
     var sz = r.bufferCap

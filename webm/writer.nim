@@ -87,8 +87,6 @@ proc write*(w: WembWriter, width, height: int, output: string, chapters: openarr
     var flags: cint
 
     while w.getFrame(frame_count, raw, flags):
-#            if (keyframe_interval > 0 and frame_count mod keyframe_interval == 0):
-#              flags = VPX_EFLAG_FORCE_KF
         discard encode_frame(addr codec, addr raw, frame_count, flags, rh, addr cfg, addr ctx)
         inc frame_count
         inc frames_encoded
@@ -103,8 +101,39 @@ proc write*(w: WembWriter, width, height: int, output: string, chapters: openarr
     destroy_rate_histogram(rh)
     close(ctx.stream)
 
+proc rgbToYuv*(r, g, b: uint8): tuple[y, u, v: uint8] {.inline.} =
+    let sR = r.int32
+    let sG = g.int32
+    let sB = b.int32
+    var yy = cast[uint8]( (66*sR + 129*sG + 25*sB + 128) shr 8) + 16
+    result.u = cast[uint8]( (-38*sR - 74*sG + 112*sB + 128) shr 8) + 128
+    result.v = cast[uint8]( (112*sR - 94*sG - 18*sB + 128) shr 8) + 128
+    result.y = yy
+
+proc rgbToYuv*(rgb: int32): tuple[y, u, v: uint8] {.inline.} =
+    rgbToYuv(cast[uint8](rgb), cast[uint8]((rgb and 0x0000ff00) shr 8), cast[uint8]((rgb and 0x00ff0000) shr 16))
+
+proc rgbaToYauv*(r, g, b, a: uint8): tuple[ya, u, v: uint8] {.inline.} =
+    let sR = r.int32
+    let sG = g.int32
+    let sB = b.int32
+    let sA = a.int32
+    var yy = cast[uint8]( (66*sR + 129*sG + 25*sB + 128) shr 8) + 16
+    result.u = cast[uint8]( (-38*sR - 74*sG + 112*sB + 128) shr 8) + 128
+    result.v = cast[uint8]( (112*sR - 94*sG - 18*sB + 128) shr 8) + 128
+
+    proc encode(y, a: float): uint8 =
+        let yy = uint8(y * 63)
+        let aa = uint8(a * 3)
+        result = (aa shl 6) or yy
+
+    result.ya = encode(yy.float / 255, sA / 255)
+
+proc rgbaToYauv*(rgba: int32): tuple[ya, u, v: uint8] {.inline.} =
+    rgbaToYauv(cast[uint8](rgba), cast[uint8]((rgba and 0x0000ff00) shr 8), cast[uint8]((rgba and 0x00ff0000) shr 16), cast[uint8](rgba shr 24))
+
 when isMainModule:
-    import nimPNG, random, imgtools.imgtools
+    import nimPNG
 
     let writer = newWriter()
     let width = 600
@@ -162,24 +191,20 @@ when isMainModule:
 
         for y in 0 ..< height:
             for x in 0 ..< width:
-                let sR = int32(cast[uint8](p.data[(y * width + x) * 4]))
-                let sG = int32(cast[uint8](p.data[(y * width + x) * 4 + 1]))
-                let sB = int32(cast[uint8](p.data[(y * width + x) * 4 + 2]))
-                let sA = int32(cast[uint8](p.data[(y * width + x) * 4 + 3]))
-
-                var yy = cast[uint8]( (66*sR + 129*sG + 25*sB + 128) shr 8) + 16
-                let uu = cast[uint8]( (-38*sR - 74*sG + 112*sB + 128) shr 8) + 128
-                let vv = cast[uint8]( (112*sR - 94*sG - 18*sB + 128) shr 8) + 128
+                let rgba = cast[ptr int32](addr p.data[(y * width + x) * 4])[]
+                let py = cast[ptr uint8](cast[uint](img.planes[0]) + uint(y * img.stride[0] + x))
 
                 when encodeAlphaToY:
-                    yy = encode(yy.float / 255, sA / 255)
+                    let enc = rgbaToYauv(rgba)
+                    py[] = enc.ya
+                else:
+                    let enc = rgbToYuv(rgba)
+                    py[] = enc.y
 
-                let py = cast[ptr uint8](cast[uint](img.planes[0]) + uint(y * img.stride[0] + x))
-                py[] = uint8(yy)
                 let pu = cast[ptr uint8](cast[uint](img.planes[1]) + uint((y div 2) * img.stride[1] + (x div 2)))
-                pu[] = uint8(uu)
+                pu[] = enc.u
                 let pv = cast[ptr uint8](cast[uint](img.planes[2]) + uint((y div 2) * img.stride[2] + (x div 2)))
-                pv[] = uint8(vv)
+                pv[] = enc.v
 
         for c in chapterFrames:
             if frameIdx == c[1]:
