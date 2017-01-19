@@ -131,6 +131,9 @@ proc nextFrame*(r: WebmReader, alpha: var ptr vpx_image_t): ptr vpx_image_t =
 proc width*(r: WebmReader): int = r.vpxctx.width.int
 proc height*(r: WebmReader): int = r.vpxctx.height.int
 
+proc fps*(r: WebmReader): float =
+    r.vpxctx.framerate.numerator / r.vpxctx.framerate.denominator
+
 when isMainModule:
     proc testDecode() =
         var webmctx: WebmInputContext

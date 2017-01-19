@@ -1,6 +1,8 @@
 import webm
 export vpx_image_t
 
+import math
+
 type WembWriter* = ref object
     getFrame*: proc(frameIdx: int, img: var vpx_image_t, flags: var cint): bool
 
@@ -31,7 +33,14 @@ proc encode_frame(codec: ptr vpx_codec_ctx_t, img: ptr vpx_image_t,
 
       echo if keyframe: "K" else: "."
 
-proc write*(w: WembWriter, width, height: int, output: string, chapters: openarray[(string, uint64, uint64)]) =
+proc toRational(f: float): VpxRational =
+    var fr = f mod 1
+    if fr < 0.001: fr = 0
+    let num = 1 / fr
+    result.numerator = round(num).cint
+    result.denominator = round(f * num).cint
+
+proc write*(w: WembWriter, width, height: int, output: string, fps: float, chapters: openarray[(string, uint64, uint64)]) =
     var cfg: vpx_codec_enc_cfg_t
     var codec: vpx_codec_ctx_t
     var raw: vpx_image_t
@@ -42,9 +51,7 @@ proc write*(w: WembWriter, width, height: int, output: string, chapters: openarr
 
     let max_frames = 0
 
-    var fps: VpxRational
-    fps.numerator = 1
-    fps.denominator = 30
+    var fps = toRational(fps)
 
     if vpx_img_alloc(addr raw, VPX_IMG_FMT_I420, cuint(width), cuint(height), 1) == nil:
         raise newException(Exception, "Could not alloc image")

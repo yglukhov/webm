@@ -311,7 +311,7 @@ type
         bit_depth: cint
         only_i420: cint
         fourcc: uint32
-        framerate: VpxRational
+        framerate*: VpxRational
 
     VpxDecInputContext* = object
         vpx_input_ctx*: ptr VpxInputContext
