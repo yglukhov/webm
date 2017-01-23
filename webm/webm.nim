@@ -554,10 +554,10 @@ const VP9_FOURCC* = 0x30395056'u32
 const VPX_EFLAG_FORCE_KF* = 1 shl 0
 
 proc file_is_webm*(webm_ctx: ptr WebmInputContext,
-                            vpx_ctx: ptr VpxInputContext): cint {.importc.}
+                            vpx_ctx: ptr VpxInputContext): cint {.importc, noconv.}
 
 proc webm_guess_framerate*(webm_ctx: ptr WebmInputContext,
-                            vpx_ctx: ptr VpxInputContext): cint {.importc.}
+                            vpx_ctx: ptr VpxInputContext): cint {.importc, noconv.}
 
 const VPX_IMAGE_ABI_VERSION = 4
 const VPX_CODEC_ABI_VERSION = (3 + VPX_IMAGE_ABI_VERSION)
@@ -568,48 +568,48 @@ const VPX_ENCODER_ABI_VERSION = (5 + VPX_CODEC_ABI_VERSION)
 
 
 proc vpx_codec_dec_init_ver*(ctx: ptr vpx_codec_ctx_t, iface: vpx_codec_iface_ptr,
-        cfg: ptr vpx_codec_dec_cfg_t, flags: vpx_codec_flags_t, ver: cint = VPX_DECODER_ABI_VERSION): vpx_codec_err_t {.importc.}
+        cfg: ptr vpx_codec_dec_cfg_t, flags: vpx_codec_flags_t, ver: cint = VPX_DECODER_ABI_VERSION): vpx_codec_err_t {.importc, noconv.}
 
 
 proc vpx_codec_enc_init_ver*(ctx: ptr vpx_codec_ctx_t, iface: vpx_codec_iface_ptr, cfg: ptr vpx_codec_enc_cfg_t,
-    flags: vpx_codec_flags_t, ver: cint = VPX_ENCODER_ABI_VERSION): vpx_codec_err_t {.importc.}
+    flags: vpx_codec_flags_t, ver: cint = VPX_ENCODER_ABI_VERSION): vpx_codec_err_t {.importc, noconv.}
 
 
-proc vpx_codec_error*(ctx: ptr vpx_codec_ctx_t): cstring {.importc.}
+proc vpx_codec_error*(ctx: ptr vpx_codec_ctx_t): cstring {.importc, noconv.}
 
-proc vpx_codec_destroy*(ctx: ptr vpx_codec_ctx_t): vpx_codec_err_t {.importc.}
+proc vpx_codec_destroy*(ctx: ptr vpx_codec_ctx_t): vpx_codec_err_t {.importc, noconv.}
 
-proc webm_read_frame*(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc.}
+proc webm_read_frame*(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc, noconv.}
 
-proc webm_read_frame_alpha*(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc.}
+proc webm_read_frame_alpha*(webm_ctx: ptr WebmInputContext, buffer: ptr ptr uint8, buffer_size: ptr csize): cint {.importc, noconv.}
 
-proc webm_get_cluster_by_time*(webm_ctx: ptr WebmInputContext, time_ns: uint64) {.importc.}
+proc webm_get_cluster_by_time*(webm_ctx: ptr WebmInputContext, time_ns: uint64) {.importc, noconv.}
 
-proc webm_get_chapters*(webm_ctx: ptr WebmInputContext, names: ptr cstring, startTimes, endTimes: ptr uint64): cint {.importc.}
+proc webm_get_chapters*(webm_ctx: ptr WebmInputContext, names: ptr cstring, startTimes, endTimes: ptr uint64): cint {.importc, noconv.}
 
-proc vpx_codec_decode*(ctx: ptr vpx_codec_ctx_t, data: ptr uint8, data_sz: cuint, user_priv: pointer, deadline: clong): vpx_codec_err_t {.importc.}
+proc vpx_codec_decode*(ctx: ptr vpx_codec_ctx_t, data: ptr uint8, data_sz: cuint, user_priv: pointer, deadline: clong): vpx_codec_err_t {.importc, noconv.}
 
-proc vpx_codec_get_frame*(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_image_t {.importc.}
+proc vpx_codec_get_frame*(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_image_t {.importc, noconv.}
 
-proc vpx_codec_error_detail*(ctx: ptr vpx_codec_ctx_t): cstring {.importc.}
+proc vpx_codec_error_detail*(ctx: ptr vpx_codec_ctx_t): cstring {.importc, noconv.}
 
-proc rewind*(file: File) {.importc.}
+proc rewind*(file: File) {.importc, noconv.}
 
-proc webm_free*(webm_ctx: ptr WebmInputContext) {.importc.}
+proc webm_free*(webm_ctx: ptr WebmInputContext) {.importc, noconv.}
 
-proc vpx_img_alloc*(img: ptr vpx_image_t, fmt: vpx_img_fmt_t, d_w, d_h, align: cuint): ptr vpx_image_t {.importc.}
-proc vpx_img_free*(img: ptr vpx_image_t) {.importc.}
+proc vpx_img_alloc*(img: ptr vpx_image_t, fmt: vpx_img_fmt_t, d_w, d_h, align: cuint): ptr vpx_image_t {.importc, noconv.}
+proc vpx_img_free*(img: ptr vpx_image_t) {.importc, noconv.}
 
-proc vpx_codec_vp9_cx*(): vpx_codec_iface_ptr {.importc.}
-proc vpx_codec_vp9_dx*(): vpx_codec_iface_ptr {.importc.}
+proc vpx_codec_vp9_cx*(): vpx_codec_iface_ptr {.importc, noconv.}
+proc vpx_codec_vp9_dx*(): vpx_codec_iface_ptr {.importc, noconv.}
 
 
-proc vpx_codec_enc_config_default*(iface: vpx_codec_iface_ptr, cfg: ptr vpx_codec_enc_cfg_t, usage: cuint): vpx_codec_err_t {.importc.}
+proc vpx_codec_enc_config_default*(iface: vpx_codec_iface_ptr, cfg: ptr vpx_codec_enc_cfg_t, usage: cuint): vpx_codec_err_t {.importc, noconv.}
 
 proc vpx_codec_encode*(ctx: ptr vpx_codec_ctx_t, img: ptr vpx_image_t, pts: vpx_codec_pts_t,
-        duration: culong, flags: vpx_enc_frame_flags_t, deadline: culong): vpx_codec_err_t {.importc.}
+        duration: culong, flags: vpx_enc_frame_flags_t, deadline: culong): vpx_codec_err_t {.importc, noconv.}
 
-proc vpx_codec_get_cx_data*(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_codec_cx_pkt_t {.importc.}
+proc vpx_codec_get_cx_data*(ctx: ptr vpx_codec_ctx_t, iter: ptr vpx_codec_iter_t): ptr vpx_codec_cx_pkt_t {.importc, noconv.}
 
 
 proc write_webm_file_header*(webm_ctx: ptr WebmOutputContext,
@@ -617,19 +617,19 @@ proc write_webm_file_header*(webm_ctx: ptr WebmOutputContext,
                             fps: ptr VpxRational,
                             stereo_fmt: stereo_format_t,
                             fourcc: cuint,
-                            par: ptr VpxRational) {.importc.}
+                            par: ptr VpxRational) {.importc, noconv.}
 
-proc write_webm_chapter*(webm_ctx: ptr WebmOutputContext, name: cstring, a, b: uint64) {.importc.}
+proc write_webm_chapter*(webm_ctx: ptr WebmOutputContext, name: cstring, a, b: uint64) {.importc, noconv.}
 
-proc write_webm_block*(webm_ctx: ptr WebmOutputContext, cfg: ptr vpx_codec_enc_cfg_t, pkt: ptr vpx_codec_cx_pkt_t) {.importc.}
-proc write_webm_file_footer*(webm_ctx: ptr WebmOutputContext) {.importc.}
+proc write_webm_block*(webm_ctx: ptr WebmOutputContext, cfg: ptr vpx_codec_enc_cfg_t, pkt: ptr vpx_codec_cx_pkt_t) {.importc, noconv.}
+proc write_webm_file_footer*(webm_ctx: ptr WebmOutputContext) {.importc, noconv.}
 
-proc init_rate_histogram*(cfg: ptr vpx_codec_enc_cfg_t, fps: ptr VpxRational): rate_hist_t {.importc.}
-proc destroy_rate_histogram*(hist: rate_hist_t) {.importc.}
+proc init_rate_histogram*(cfg: ptr vpx_codec_enc_cfg_t, fps: ptr VpxRational): rate_hist_t {.importc, noconv.}
+proc destroy_rate_histogram*(hist: rate_hist_t) {.importc, noconv.}
 
 proc update_rate_histogram*(hist: rate_hist_t,
                            cfg: ptr vpx_codec_enc_cfg_t,
-                           pkt: ptr vpx_codec_cx_pkt_t) {.importc.}
+                           pkt: ptr vpx_codec_cx_pkt_t) {.importc, noconv.}
 
 const VPX_IMG_FMT_PLANAR* = 0x100
 const VPX_IMG_FMT_I420* = VPX_IMG_FMT_PLANAR or 2

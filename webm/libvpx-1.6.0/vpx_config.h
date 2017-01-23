@@ -31,7 +31,13 @@
 #define HAVE_AVX 0
 #define HAVE_AVX2 0
 #define HAVE_VPX_PORTS 1
+
+#ifdef __MINGW32__
+#define HAVE_PTHREAD_H 0
+#else
 #define HAVE_PTHREAD_H 1
+#endif
+
 #define HAVE_UNISTD_H 1
 #define CONFIG_DEPENDENCY_TRACKING 1
 #define CONFIG_EXTERNAL_BUILD 0
